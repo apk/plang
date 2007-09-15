@@ -10,6 +10,8 @@ import java.io.StringReader;
 import java.util.Vector;
 
 final public class Tokenizer {
+   final public static String rcsid = "$Header$";
+
    final public static String
       EOF = "<eof>",
       STR = "<str>",

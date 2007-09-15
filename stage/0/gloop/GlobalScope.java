@@ -10,6 +10,8 @@ import java.io.IOException;
 import static gloop.Tokenizer.*;
 
 public class GlobalScope extends Scope {
+   final public static String rcsid = "$Header$";
+
    Vector<Tokenizer.Token> empty_tokens = new Vector<Tokenizer.Token> ();
 
    public GlobalScope () {
