@@ -55,8 +55,6 @@ final public class Tokenizer {
       }
    }
 
-   private final static String rcsid = "$Header$";
-
    private final Reader rd;
    private int c;
    int line;
