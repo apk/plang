@@ -18,3 +18,7 @@ public class u {
       }
     }
 }
+
+// Local variables:
+// compile-command: "javac -Xlint:unchecked u.java gloop/*.java && java u"
+// End:
