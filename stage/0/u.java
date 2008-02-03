@@ -4,15 +4,26 @@ import java.io.FileReader;
 import gloop.*;
 
 public class u {
+   final public static String rcsid = "$Header$";
+
    public static void main (String [] a) {
       try {
-         Tokenizer t = new Tokenizer (new FileReader ("test.in"));
-         Parser p = new Parser (t);
-         CodeStore cs = new CodeStore ();
-         Code c = new Code (cs);
-         p.parse (c, new GlobalScope (), Tokenizer.EOF);
-         c.finish ();
-         cs.dump ();
+         try {
+            Tokenizer t = new Tokenizer (new FileReader ("test.in"));
+            Parser p = new Parser (t);
+            CodeStore cs = new CodeStore ();
+            Code c = new Code (cs);
+            p.parse (c, new LocalScope (new GlobalScope ()), Tokenizer.EOF);
+            c.put ("stop");
+            c.finish ();
+            Tokenizer.flush ();
+            cs.dump ();
+
+            Runner prg = cs.getProg ();
+            prg.run ();
+         } finally {
+            Tokenizer.flush ();
+         }
       } catch (java.io.IOException e) {
          System.out.println ("IOEx: " + e);
          e.printStackTrace ();

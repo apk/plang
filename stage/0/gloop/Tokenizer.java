@@ -40,12 +40,12 @@ final public class Tokenizer {
          tok = t;
          val = v;
          line = l;
-         System.out.println ("Token(" + tok + ":" + val + ")");
+         // System.out.println ("Token(" + tok + ":" + val + ")");
       }
       public Token (String t, int l) {
          tok = t;
          line = l;
-         System.out.println ("Token(" + tok + ")");
+         // System.out.println ("Token(" + tok + ")");
       }
       public boolean is (String t) {
          return tok == t;
@@ -68,7 +68,20 @@ final public class Tokenizer {
 
    private final Reader rd;
    private int c;
-   int line;
+   private int line;
+   private static int lpos = 0;
+
+   public static void flush () {
+      if (lpos > 0) {
+         System.out.println ();
+         lpos = 0;
+      }
+   }
+
+   public static void println (String s) {
+      flush ();
+      System.out.println (s);
+   }
 
    public Tokenizer (Reader r) throws IOException {
       line = 1;
@@ -77,8 +90,19 @@ final public class Tokenizer {
    }
 
    private final int getc () throws IOException {
-      if (c == '\n') line ++;
+      if (c == '\n') {
+         line ++;
+      }
       c = rd.read ();
+      if (c == '\n') {
+         if (lpos > 0) {
+            lpos = 0;
+            System.out.println ();
+         }
+      } else if (c != -1) {
+         System.out.print ((char)c);
+         lpos ++;
+      }
       // System.out.println ("<" + (char)c + ">");
       return c;
    }

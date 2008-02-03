@@ -8,6 +8,14 @@ let b = fun (x) {
 	(2 * x);
 };
 
+print b (4);
+
 print (b) (fun (x) { x; } (a));
+
+fun (x,y) {
+	print x;
+	print y;
+} ("xx", "yy");
+
 
 # (print c ((a,b)))

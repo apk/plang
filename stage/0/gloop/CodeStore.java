@@ -7,6 +7,8 @@ import java.util.Vector;
 import java.io.ByteArrayOutputStream;
 
 public class CodeStore {
+   final public static String rcsid = "$Header$";
+
    private Vector<String> strings = new Vector<String> ();
 
    ByteArrayOutputStream bytes = new ByteArrayOutputStream ();
@@ -53,5 +55,11 @@ public class CodeStore {
             }
          }
       }
+   }
+
+   public Runner getProg () {
+      return new Runner (strings.toArray (new String [0]),
+                         bytes.toByteArray (),
+                         last_take);
    }
 }

@@ -12,16 +12,23 @@ public class Scope {
 
    abstract public class Ent {
       public Ent (String n) {
+         if (ents.get (n) != null) {
+            throw new IllegalArgumentException ("doubly defined: " + n);
+         }
          ents.put (n, this);
       }
 
-      public Vector<Tokenizer.Token> macstmt (Parser p, Code c, Scope sc)
+      public Vector<Tokenizer.Token> macstmt (Parser p, Code c, LocalScope sc)
          throws IOException, Tokenizer.TokEx
       {
          // Macro expanders either return empty list to indicate
          // internal processing of macro, or a token list that
          // is the expansion of a user-level macro.
          return null;
+      }
+
+      public Scope scope () {
+         return Scope.this;
       }
 
       abstract public String desc ();
@@ -47,16 +54,9 @@ public class Scope {
       return null;
    }
 
-   public void putDef (final String n) {
-      // XXX Duplicate names are only an error within argument lists,
-      // or within single let statements.
-      new Ent (n) {
-         public String desc () { return "<def " + n + ">"; }
-      };
-   }
-   public void putVar (final String n) {
-      new Ent (n) {
-         public String desc () { return "<var " + n + ">"; }
-      };
+   public int countTo (Scope c) {
+      if (c == this) return 0;
+      if (parent == null) throw new IllegalArgumentException ("not parent");
+      return parent.countTo (c) + 1;
    }
 }

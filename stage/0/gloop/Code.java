@@ -7,28 +7,32 @@ import java.util.Vector;
 import java.io.ByteArrayOutputStream;
 
 public class Code {
+   final public static String rcsid = "$Header$";
+
    CodeStore store;
 
    ByteArrayOutputStream bytes = new ByteArrayOutputStream ();
 
    private static String [] codes = {
       "nop",
-      "deflocal",
-      "varlocal",
+      "up",  // Get frame pointer n levels up
+      "lstore", // into a local variable (via current fp)
+      "store", // into a scoped variable (via fp in acc)
+      "lload", // load from local frame
+      "load", // load from frame in acc
       "print",
-      "arg",
-      "begin",
       "nullval",
       "push",
       "mult",
-      "load",
       "numval",
       "strval",
       "push",
+      "swap",
       "call",
       "fun",
       "meth",
-      "ret"
+      "ret",
+      "stop"
    };
 
    public Code (CodeStore s) {
@@ -72,19 +76,19 @@ public class Code {
    }
 
    public void put (String op, String par) {
-      System.out.println ("                     (" + op + " " + par + ")");
+      Tokenizer.println ("                     (" + op + " " + par + ")");
       putpar (store.putStr (par));
       putop (op);
    }
 
    public void put (String op, int par) {
-      System.out.println ("                     (" + op + " " + par + ")");
+      Tokenizer.println ("                     (" + op + " " + par + ")");
       putpar (par);
       putop (op);
    }
 
    public void put (String op) {
-      System.out.println ("                     (" + op + ")");
+      Tokenizer.println ("                     (" + op + ")");
       putop (op);
    }
 }

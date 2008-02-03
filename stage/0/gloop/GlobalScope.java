@@ -15,37 +15,40 @@ public class GlobalScope extends Scope {
    public GlobalScope () {
 
       new Ent ("let") {
-         public Vector<Tokenizer.Token> macstmt (Parser p, Code c, Scope sc)
+         public Vector<Tokenizer.Token> macstmt (Parser p, Code c,
+                                                 LocalScope sc)
             throws IOException, Tokenizer.TokEx
          {
             //             /* Type tp = */ p.opttype (sc);
             String sym = p.sym ();
             p.chk (ASGN);
             p.pexpr (c, sc);
-            c.put ("deflocal", sym);
-            sc.putDef (sym);
+            LocalScope.FrameEnt e = sc.putDef (sym);
+            c.put ("lstore", e.getOffset ());
             return Tokenizer.empty_tokens;
          }
          public String desc () { return "<let>"; }
       };
 
       new Ent ("var") {
-         public Vector<Tokenizer.Token> macstmt (Parser p, Code c, Scope sc)
+         public Vector<Tokenizer.Token> macstmt (Parser p, Code c,
+                                                 LocalScope sc)
             throws IOException, Tokenizer.TokEx
          {
             //             /* Type tp = */ p.opttype (sc);
             String sym = p.sym ();
             p.chk (ASGN);
             p.pexpr (c, sc);
-            c.put ("varlocal", sym);
-            sc.putVar (sym);
+            LocalScope.FrameEnt e = sc.putVar (sym);
+            c.put ("lstore", e.getOffset ());
             return Tokenizer.empty_tokens;
          }
          public String desc () { return "<var>"; }
       };
 
       new Ent ("print") {
-         public Vector<Tokenizer.Token> macstmt (Parser p, Code c, Scope sc)
+         public Vector<Tokenizer.Token> macstmt (Parser p, Code c,
+                                                 LocalScope sc)
             throws IOException, Tokenizer.TokEx
          {
             p.pexpr (c, sc);
@@ -61,17 +64,19 @@ public class GlobalScope extends Scope {
             super (n);
             fn = n;
          }
-         public Vector<Tokenizer.Token> macstmt (Parser p, Code c, Scope sc)
+         public Vector<Tokenizer.Token> macstmt (Parser p, Code c,
+                                                 LocalScope sc)
             throws IOException, Tokenizer.TokEx
          {
             Code nc = new Code (c);
-            Scope ns = new Scope (sc);
+            LocalScope ns = new LocalScope (sc);
+            int argc = 0;
             p.chk (LPAR);
             if (!p.is (RPAR)) {
                while (true) {
                   String n = p.sym ();
-                  nc.put ("arg", n);
                   // Allow fun (var a) to override the def?
+                  argc ++;
                   ns.putDef (n);
                   if (!p.is (COMMA)) {
                      break;
@@ -79,11 +84,11 @@ public class GlobalScope extends Scope {
                }
                p.chk (RPAR);
             }
-            nc.put ("begin");
             p.chk (LBRC);
             p.parse (nc, ns, RBRC);
             nc.put ("ret");
-            c.put (fn, nc.finish ());
+            c.put ("numval", nc.finish ());
+            c.put (fn, argc);
             return Tokenizer.empty_tokens;
          }
       }

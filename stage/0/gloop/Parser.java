@@ -41,6 +41,13 @@
  * lets ought to be dead anyway, but what is the proper right-hand side here?
  */
 
+/*
+ * Momentarily we forbid to use parameter names as variable names in
+ * the top scope of a function, because we essentially make the
+ * parameters local lets. (And let is not a call-by-need thing,
+ * we're strict.)
+ */
+
 package gloop;
 
 import java.io.IOException;
@@ -63,11 +70,11 @@ public class Parser {
       return tok = tk.get ();
    }
 
-   public void parse (Code c, Scope sc, String endt)
+   public void parse (Code c, LocalScope sc, String endt)
       throws IOException, TokEx
    {
       c.put ("nullval"); // Initialize acc: Just the default return value
-      System.out.println ("parser to " + endt);
+      // Tokenizer.println ("parser to " + endt);
       while (!tok.is (endt)) {
          //          // Handle special case of stmt-macro
          //          // (XXX But let is later going to be an expr-macro!)
@@ -87,12 +94,14 @@ public class Parser {
          //          }
          pexpr (c, sc);
          chk (SEMI);
-         System.out.println ("Parser at " + tok.tok);
+         // Tokenizer.println ("Parser at " + tok.tok);
       }
       chk (endt);
    }
 
-   public void pexpr (Code c, Scope sc) throws IOException, Tokenizer.TokEx {
+   public void pexpr (Code c, LocalScope sc)
+      throws IOException, Tokenizer.TokEx
+   {
       pprim (c, sc);
       while (true) {
          if (is (AST)) {
@@ -105,7 +114,9 @@ public class Parser {
       }
    }
 
-   public void pprim (Code c, Scope sc) throws IOException, Tokenizer.TokEx {
+   public void pprim (Code c, LocalScope sc)
+      throws IOException, Tokenizer.TokEx
+   {
       /* Kernel primitives */
       if (tok.is (SYM)) {
          /* Macro application loop */
@@ -127,7 +138,22 @@ public class Parser {
                } else {
                   // XXX Need to check other special cases,
                   // or load via Ent.something
-                  c.put ("load", s);
+                  // XXX Is it possible to make this case the other way,
+                  // by calling e.makeLoadCode()? Or would that be
+                  // equally ugly?
+                  if (e instanceof LocalScope.FrameEnt) {
+                     LocalScope.FrameEnt fe = (LocalScope.FrameEnt)e;
+                     int z = sc.countTo (fe.scope ());
+                     if (z == 0) {
+                        c.put ("lload", fe.getOffset ());
+                     } else {
+                        c.put ("up", z);
+                        c.put ("load", fe.getOffset ());
+                     }
+                  } else {
+                     throw new IllegalArgumentException (
+                        "internal: not a frame ent");
+                  }
                }
             } else {
                throw new IllegalArgumentException ("undefined: " + s);
@@ -155,12 +181,13 @@ public class Parser {
                while (true) {
                   c.put ("push");
                   pexpr (c, sc);
+                  c.put ("swap");
                   cnt ++;
                   if (!is (COMMA)) break;
                }
                chk (RPAR);
             }
-            c.put ("call", "" + cnt); // fn is also pushed, last arg isn't
+            c.put ("call", cnt); // fn in acc, args on stack
          } else {
             break;
          }
