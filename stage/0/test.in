@@ -28,10 +28,16 @@ fun (e) {
 
 let r = fun () {
 	let f = "local-f";
-	fun () { f; };
+	fun () { f };
 } ();
 
 print r ();
 
+print (print 2; 4)
+
 
 # (print c ((a,b)))
+
+# Local variables:
+# compile-command: "javac -Xlint:unchecked u.java gloop/*.java && java u"
+# End:
