@@ -26,16 +26,16 @@ public class LocalScope extends Scope {
 
    public FrameEnt putDef (final String n) {
       return new FrameEnt (n) {
-         public String desc () { return "<def " + n + ">"; }
-         public boolean isVar () { return false; }
-      };
+            public String desc () { return "<def " + n + ">"; }
+            public boolean isVar () { return false; }
+         };
    }
 
    public FrameEnt putVar (final String n) {
       return new FrameEnt (n) {
-         public String desc () { return "<var " + n + ">"; }
-         public boolean isVar () { return true; }
-      };
+            public String desc () { return "<var " + n + ">"; }
+            public boolean isVar () { return true; }
+         };
    }
 }
 
