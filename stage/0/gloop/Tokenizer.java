@@ -1,5 +1,5 @@
 // -*- mode: Java; c-basic-offset: 3; tab-width: 8; indent-tabs-mode: nil -*-
-// Copyright (C) 2007 Andreas Krey, Ulm, Germany <a.krey@gmx.de>
+// Copyright (C) 2007, 2008 Andreas Krey, Ulm, Germany <a.krey@gmx.de>
 
 package gloop;
 
@@ -12,14 +12,25 @@ import java.util.Vector;
 final public class Tokenizer {
    final public static String rcsid = "$Header$";
 
+   // This is identified by identity so it does not matter that
+   // stupid people may modify the actual vector.
+   final public static Vector<Tokenizer.Token> empty_tokens =
+      new Vector<Tokenizer.Token> ();
+
    final public static String
       EOF = "<eof>",
-      STR = "<str>",
-      SYM = "<sym>",
-      TYP = "<typ>",
+      // TYP = "<typ>",
       NUM = "<num>",
       ASGN = "=",
-      SEMI = ";";
+      SEMI = ";",
+      COMMA = ",",
+      LPAR = "(",
+      RPAR = ")",
+      LBRC = "{",
+      RBRC = "}",
+      AST = "*",
+      STR = "<str>",
+      SYM = "<sym>";
 
    public static class Token {
       public String tok;
@@ -97,18 +108,42 @@ final public class Tokenizer {
             getc ();
             return new Token (SEMI, line);
          }
+         if (c == ',') {
+            getc ();
+            return new Token (COMMA, line);
+         }
+         if (c == '(') {
+            getc ();
+            return new Token (LPAR, line);
+         }
+         if (c == ')') {
+            getc ();
+            return new Token (RPAR, line);
+         }
+         if (c == '{') {
+            getc ();
+            return new Token (LBRC, line);
+         }
+         if (c == '}') {
+            getc ();
+            return new Token (RBRC, line);
+         }
+         if (c == '*') {
+            getc ();
+            return new Token (AST, line);
+         }
          if (c == '=') {
             getc ();
             return new Token (ASGN, line);
          }
-         if (isup (c)) {
-            StringBuffer coll = new StringBuffer ();
-            while (isid (c) || isnum (c)) {
-               coll.append ((char)c);
-               getc ();
-            }
-            return new Token (TYP, coll.toString (), line);
-         }
+         //          if (isup (c)) {
+         //             StringBuffer coll = new StringBuffer ();
+         //             while (isid (c) || isnum (c)) {
+         //                coll.append ((char)c);
+         //                getc ();
+         //             }
+         //             return new Token (TYP, coll.toString (), line);
+         //          }
          if (isid (c)) {
             StringBuffer coll = new StringBuffer ();
             while (isid (c) || isnum (c)) {

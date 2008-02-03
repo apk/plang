@@ -1,5 +1,45 @@
 // -*- mode: Java; c-basic-offset: 3; tab-width: 8; indent-tabs-mode: nil -*-
-// Copyright (C) 2007 Andreas Krey, Ulm, Germany <a.krey@gmx.de>
+// Copyright (C) 2007, 2008 Andreas Krey, Ulm, Germany <a.krey@gmx.de>
+
+/* The toplevel is effectively the contents of
+ * 'fun (args) { catch exit; $body }'
+ * which is then invoked with the command line arguments.
+ *
+ * ; is a right-associative expression-separator/combinator;
+ * 'let a = x; f (x)', oops, should create new scope by itself?
+ * (Getting the scope right is relevant for call/cc and all sorts
+ * of proper incarnating (which places do see the same incarnation
+ * of a variable?).)
+ */
+
+/* In this implementation we do symbol lookup at runtime, because I am
+ * to lazy to implement call frame management. Still we need to keep
+ * a compile-time symbol table for lookup because macros (and potentially
+ * other stuff) are also scoped. (Types have just been eradicated, so
+ * they don't appear any more, though.)
+ *
+ * Interestingly we don't need to be as exact with the scoping (of let)
+ * at compile time because the proper incarnation management happens
+ * at runtime now. (But we really need to have a value chain, because
+ * that is what lets basically degenerate to when we don't optimize.)
+ *
+ * The symbol lookup has one other interesting property: By default,
+ * we only see the 'global' (that is: toplevel function) symbols
+ * we define ourselves.
+ *
+ * Also, should be scope-check functions right away or later, when
+ * the surrounding function is done? The latter does not really
+ * work with strange macros, but we could defer other lookups?
+ */
+
+/* We assume an accumulator which holds a current value. That way we do
+ * deal that much with the last pop-or-not after or before an expression.
+ */
+
+/*
+ * Should it be 'let x = <expr>' on expression-level lets? Statement-level
+ * lets ought to be dead anyway, but what is the proper right-hand side here?
+ */
 
 package gloop;
 
@@ -23,62 +63,140 @@ public class Parser {
       return tok = tk.get ();
    }
 
-   public void parse (Scope sc, String endt) throws IOException, TokEx {
+   public void parse (Code c, Scope sc, String endt)
+      throws IOException, TokEx
+   {
+      c.put ("nullval"); // Initialize acc: Just the default return value
+      System.out.println ("parser to " + endt);
       while (!tok.is (endt)) {
-         // Handle special case of stmt-macro
-         // (XXX But let is later going to be an expr-macro!)
-         if (tok.is (SYM)) {
-            Scope.Ent e = sc.get (tok.val);
-            if (e != null) {
-               get ();
-               Vector<Tokenizer.Token> toklist = e.macstmt (this, sc);
-               if (toklist != null) {
-                  // Ok, this is actually some kind of macro;
-                  // either the list is empty (-> internally done),
-                  // or it is a replacement.
-                  tk.push (toklist);
-                  continue;
-               }
-            }
-            pexpr (sc);
+         //          // Handle special case of stmt-macro
+         //          // (XXX But let is later going to be an expr-macro!)
+         //          if (tok.is (SYM)) {
+         //             Scope.Ent e = sc.get (tok.val);
+         //             if (e != null) {
+         //                get ();
+         //                Vector<Tokenizer.Token> toklist = e.macstmt (this, c, sc);
+         //                if (toklist != null) {
+         //                   // Ok, this is actually some kind of macro;
+         //                   // either the list is empty (-> internally done),
+         //                   // or it is a replacement.
+         //                   tk.push (toklist);
+         //                   continue;
+         //                }
+         //             }
+         //          }
+         pexpr (c, sc);
+         chk (SEMI);
+         System.out.println ("Parser at " + tok.tok);
+      }
+      chk (endt);
+   }
+
+   public void pexpr (Code c, Scope sc) throws IOException, Tokenizer.TokEx {
+      pprim (c, sc);
+      while (true) {
+         if (is (AST)) {
+            c.put ("push");
+            pexpr (c, sc);
+            c.put ("mult");
+         } else {
+            return;
          }
       }
    }
 
-   public void pexpr (Scope sc) throws IOException, Tokenizer.TokEx {
-      if (tok.is (NUM)) {
-         System.out.println ("NUM");
+   public void pprim (Code c, Scope sc) throws IOException, Tokenizer.TokEx {
+      /* Kernel primitives */
+      if (tok.is (SYM)) {
+         /* Macro application loop */
+         while (tok.is (SYM)) {
+            String s = tok.val;
+            get ();
+            Scope.Ent e = sc.getRec (s);
+            if (e != null) {
+               Vector<Tokenizer.Token> toklist = e.macstmt (this, c, sc);
+               if (toklist == Tokenizer.empty_tokens) {
+                  // Has been handled internally and only consumed tokens;
+                  // we're done.
+                  break;
+               } else if (toklist != null) {
+                  // Ok, this is actually some kind of macro;
+                  // use the replacement and redo.
+                  tk.push (toklist);
+                  continue;
+               } else {
+                  // XXX Need to check other special cases,
+                  // or load via Ent.something
+                  c.put ("load", s);
+               }
+            } else {
+               throw new IllegalArgumentException ("undefined: " + s);
+            }
+            break;
+         }
+      } else if (tok.is (NUM)) {
+         c.put ("numval", Integer.parseInt (tok.val));
          get ();
-         return;
-      }
-      if (tok.is (STR)) {
-         System.out.println ("STR");
+      } else if (tok.is (STR)) {
+         c.put ("strval", tok.val);
          get ();
-         return;
+      } else if (is (LPAR)) {
+         pexpr (c, sc);
+         chk (RPAR);
+      } else {
+         throw new IllegalArgumentException ("in pexpr (" + tok.tok + ")");
       }
-      throw new IllegalArgumentException ("in pexpr (" + tok.tok + ")");
+
+      /* Postfix loop */
+      while (true) {
+         if (is (LPAR)) {
+            int cnt = 0;
+            if (!is (RPAR)) {
+               while (true) {
+                  c.put ("push");
+                  pexpr (c, sc);
+                  cnt ++;
+                  if (!is (COMMA)) break;
+               }
+               chk (RPAR);
+            }
+            c.put ("call", "" + cnt); // fn is also pushed, last arg isn't
+         } else {
+            break;
+         }
+      }
    }
 
    public void chk (String t) throws IOException, Tokenizer.TokEx {
       if (!tok.is (t)) {
-         throw new IllegalArgumentException ("not a '" + t + "'");
+         throw new IllegalArgumentException ("at '" + tok.tok +
+                                             "': not a '" + t + "'");
       }
       get ();
    }
 
-   public void sym (Scope sc) throws IOException, Tokenizer.TokEx {
+   public boolean is (String t) throws IOException, Tokenizer.TokEx {
+      if (!tok.is (t)) {
+         return false;
+      }
+      get ();
+      return true;
+   }
+
+   public String sym () throws IOException, Tokenizer.TokEx {
       if (!tok.is (SYM)) {
          throw new IllegalArgumentException ("not a sym");
       }
       String s = tok.val;
       get ();
+      return s;
    }
 
-   public void opttype (Scope sc) throws IOException, Tokenizer.TokEx {
-      if (tok.is (TYP)) {
-         get ();
-         // return Type;
-      }
-      // return null
-   }
+   //    public void opttype (Scope sc) throws IOException, Tokenizer.TokEx {
+   //       if (tok.is (TYP)) {
+   //          get ();
+   //          // return Type;
+   //       }
+   //       // return null
+   //    }
 }

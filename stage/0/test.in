@@ -1,2 +1,13 @@
 var s = "adf";
-let Int a = 1;
+let a = 1;
+
+print s;
+
+let b = fun (x) {
+	print x;
+	(2 * x);
+};
+
+print (b) (fun (x) { x; } (a));
+
+# (print c ((a,b)))

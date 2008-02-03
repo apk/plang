@@ -8,7 +8,11 @@ public class u {
       try {
          Tokenizer t = new Tokenizer (new FileReader ("test.in"));
          Parser p = new Parser (t);
-         p.parse (new GlobalScope (), Tokenizer.EOF);
+         CodeStore cs = new CodeStore ();
+         Code c = new Code (cs);
+         p.parse (c, new GlobalScope (), Tokenizer.EOF);
+         c.finish ();
+         cs.dump ();
       } catch (java.io.IOException e) {
          System.out.println ("IOEx: " + e);
          e.printStackTrace ();
