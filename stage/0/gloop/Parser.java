@@ -48,6 +48,43 @@
  * we're strict.)
  */
 
+/* We have a small problem with {}. While we can use () mostly just
+ * as well, {} is needed to indicate a new scope (thus avoiding lets
+ * to leak into the next 'statement'. Unfortunately, {} is also needed
+ * for hash/object literals.
+ */
+
+/* Finally, it may be possible to allow leaving out semicolons at end
+ * of line (but only if it would be permissible in the parse at that
+ * point. May be some fiddling with the tokenizer, though.
+ */
+
+/* call/cc. It is 'call/cc (proc)', where proc is invoked with another
+ * proc (the continuation). Implementation: As a builtin/macro? Need
+ * to form the continuation into an invocable, and to call the proc.
+ *
+ * call/cc (fun (exit) {
+ *     if (whatever) exit ();
+ * });
+ *
+ * There is still an open question how to make call/cc look like a function,
+ * even when it is a builtin one. In the code we quite probably need a
+ * special op at some level, and as we can't link code yet, a opcode
+ * is the only way. Probably it isn't to bad to have call/cc as a builtin
+ * macro in the global table, but is still disables the reassignmant
+ * (see below). It should be something that can be passed by value
+ * at runtime (this does not apply to let/var/fun). Basically this
+ * means that call/cc must just produce this function which is then
+ * invoked. (This and others could be in a system catalog, and having
+ * a parameterized 'system' opcode.)
+ */
+
+/* Oops: 'let myvar = var;' does not work, as let needs an expression
+ * on the RHS, and can't take a compile-time symbol value. Have an
+ * 'alias myvar = var;' or maclet or symlet? Statement vs. expression
+ * level?
+ */
+
 package gloop;
 
 import java.io.Reader;
@@ -94,7 +131,7 @@ public class Parser {
          //             }
          //          }
          pexpr (c, sc);
-         chk (SEMI);
+         if (!is (SEMI)) break;
          // Tokenizer.println ("Parser at " + tok.tok);
       }
       chk (endt);
@@ -168,8 +205,9 @@ public class Parser {
          c.put ("strval", tok.val);
          get ();
       } else if (is (LPAR)) {
-         pexpr (c, sc);
-         chk (RPAR);
+         // pexpr (c, sc);
+         // chk (RPAR);
+         parse (c, sc, RPAR);
       } else {
          throw new IllegalArgumentException ("in pexpr (" + tok.tok + ")");
       }
