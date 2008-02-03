@@ -8,22 +8,8 @@ public class u {
 
    public static void main (String [] a) {
       try {
-         try {
-            Tokenizer t = new Tokenizer (new FileReader ("test.in"));
-            Parser p = new Parser (t);
-            CodeStore cs = new CodeStore ();
-            Code c = new Code (cs);
-            p.parse (c, new LocalScope (new GlobalScope ()), Tokenizer.EOF);
-            c.put ("stop");
-            c.finish ();
-            Tokenizer.flush ();
-            cs.dump ();
-
-            Runner prg = cs.getProg ();
-            prg.run ();
-         } finally {
-            Tokenizer.flush ();
-         }
+         Runner prg = Parser.parse (new FileReader ("test.in"));
+         prg.run ();
       } catch (java.io.IOException e) {
          System.out.println ("IOEx: " + e);
          e.printStackTrace ();
