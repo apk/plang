@@ -47,7 +47,7 @@ public class Runner {
       while (true) {
          int c = code [pc ++] & 255;
          if (c >= 240) {
-            param = (param << 16) | (c & 15);
+            param = (param << 4) | (c & 15);
             continue;
          }
          String op = Code.getCode (c);
