@@ -50,6 +50,7 @@
 
 package gloop;
 
+import java.io.Reader;
 import java.io.IOException;
 import java.util.Vector;
 
@@ -226,4 +227,21 @@ public class Parser {
    //       }
    //       // return null
    //    }
+
+   public static Runner parse (Reader r) throws IOException, Tokenizer.TokEx {
+      try {
+         Tokenizer t = new Tokenizer (r);
+         Parser p = new Parser (t);
+         CodeStore cs = new CodeStore ();
+         Code c = new Code (cs);
+         p.parse (c, new LocalScope (new GlobalScope ()), Tokenizer.EOF);
+         c.put ("stop");
+         c.finish ();
+         Tokenizer.flush ();
+         cs.dump ();
+         return cs.getProg ();
+      } finally {
+         Tokenizer.flush ();
+      }
+   } 
 }
