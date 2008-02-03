@@ -17,5 +17,19 @@ fun (x,y) {
 	print y;
 } ("xx", "yy");
 
+print "test";
+
+fun (e) {
+	print e;
+	e ();
+} (fun () { print "x"; });
+
+let r = fun () {
+	let f = "local-f";
+	fun () { f; };
+} ();
+
+print r ();
+
 
 # (print c ((a,b)))
