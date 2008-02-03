@@ -7,8 +7,6 @@ import java.util.Vector;
 import java.io.ByteArrayOutputStream;
 
 public class Code {
-   final public static String rcsid = "$Header$";
-
    CodeStore store;
 
    ByteArrayOutputStream bytes = new ByteArrayOutputStream ();
