@@ -85,6 +85,11 @@
  * level?
  */
 
+/* And: Tail recursion eliminination. Should be just looking for
+ * direct sequence of call and ret? Ok, need to follow jumps for
+ * that so it is better done earlier.
+ */
+
 package gloop;
 
 import java.io.Reader;
