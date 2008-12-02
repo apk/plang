@@ -1,0 +1,2 @@
+Plan: Implement a language runtime so that a running program
+survives a machine crash without even noticing.
