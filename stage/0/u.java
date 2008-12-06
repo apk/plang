@@ -4,7 +4,6 @@ import java.io.FileReader;
 import gloop.*;
 
 public class u {
-   final public static String rcsid = "$Header$";
 
    public static void main (String [] a) {
       try {

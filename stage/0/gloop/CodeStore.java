@@ -7,7 +7,6 @@ import java.util.Vector;
 import java.io.ByteArrayOutputStream;
 
 public class CodeStore {
-   final public static String rcsid = "$Header$";
 
    private Vector<String> strings = new Vector<String> ();
 

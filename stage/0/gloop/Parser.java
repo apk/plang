@@ -99,7 +99,6 @@ import java.util.Vector;
 import static gloop.Tokenizer.*;
 
 public class Parser {
-   final public static String rcsid = "$Header$";
 
    final Tokenizer tk;
    Tokenizer.Token tok;

@@ -8,7 +8,6 @@ import java.util.Vector;
 import java.io.IOException;
 
 public class Scope {
-   final public static String rcsid = "$Header$";
 
    abstract public class Ent {
       public Ent (String n) {

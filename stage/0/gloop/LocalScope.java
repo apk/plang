@@ -4,7 +4,6 @@
 package gloop;
 
 public class LocalScope extends Scope {
-   final public static String rcsid = "$Header$";
 
    private int nextOffset = 0;
 

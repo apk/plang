@@ -4,7 +4,6 @@
 package gloop;
 
 public class Runner {
-   final public static String rcsid = "$Header$";
 
    private String [] strings;
    private byte [] code;

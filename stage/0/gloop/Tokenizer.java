@@ -10,7 +10,6 @@ import java.io.StringReader;
 import java.util.Vector;
 
 final public class Tokenizer {
-   final public static String rcsid = "$Header$";
 
    // This is identified by identity so it does not matter that
    // stupid people may modify the actual vector.
