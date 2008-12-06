@@ -1,2 +1,5 @@
 Plan: Implement a language runtime so that a running program
 survives a machine crash without even noticing.
+
+What's here now (in stage/0) is older work for bootstrapping
+the language from java.
