@@ -1,0 +1,15 @@
+
+
+
+gettok = fun () {
+  var c = getchar ();
+  let getc = fun () {
+    c = getchar ();
+  };
+  var t = nil;
+  let gettok = fun () {
+     ...
+  };
+  gettok ();
+  gettok;
+} ();
