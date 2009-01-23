@@ -20,5 +20,5 @@ public class u {
 }
 
 // Local variables:
-// compile-command: "javac -Xlint:unchecked u.java gloop/*.java && java u"
+// compile-command: "mkdir -p classes && javac -d classes -Xlint:unchecked u.java gloop/*.java && java -classpath classes u"
 // End:
